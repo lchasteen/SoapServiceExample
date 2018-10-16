@@ -25,14 +25,19 @@ import com.partnersoft.v5.soap.service.example.multispeak.model.MultiSpeakMsgHea
 import com.partnersoft.v5.soap.service.example.multispeak.model.ObjectFactory;
 import com.partnersoft.v5.soap.service.example.multispeak.model.PingURL;
 import com.partnersoft.v5.soap.service.example.multispeak.model.PingURLResponse;
+import com.partnersoft.v5.soap.service.example.multispeak.model.StakedWorkOrderNotification;
+import com.partnersoft.v5.soap.service.example.multispeak.model.StakedWorkOrderNotificationResponse;
 
 
-
+/**
+ * EndPoint for Soap services.
+ * @author Lane Chasteen
+ */
 @Endpoint
 public class SoapServiceEndpoint {
 	//-- logging --//
 	private static final Logger log = LoggerFactory.getLogger(SoapServiceEndpoint.class);
-	
+
 	//-- properties --//
 	private static final String NAMESPACE_URI = "http://www.multispeak.org/Version_3.0";
 
@@ -49,7 +54,7 @@ public class SoapServiceEndpoint {
 		List<String> tempMethodsList = new ArrayList<>();
 		tempMethodsList.add("PingURL");
 		tempMethodsList.add("GetMethods");
-
+		// TODO add additional supported methods.
 		METHODS_LIST = Collections.unmodifiableList(tempMethodsList);
 	}
 
@@ -61,9 +66,8 @@ public class SoapServiceEndpoint {
 	 */
 	@PayloadRoot(namespace = NAMESPACE_URI, localPart = "PingURL")
 	@ResponsePayload
-	public PingURLResponse pingURL(
-			@SuppressWarnings("unused") @RequestPayload PingURL methods) {
-		
+	public PingURLResponse pingURL(@RequestPayload PingURL methods) {
+
 		log.info("... server pingURL() request received.");
 		ObjectFactory factory = new ObjectFactory();
 		PingURLResponse response = factory.createPingURLResponse();
@@ -85,6 +89,7 @@ public class SoapServiceEndpoint {
 
 		log.info("... server getMethods() request received.");
 		GetMethodsResponse response = new GetMethodsResponse();
+
 		try {
 			setHeader(messageContext);
 		}
@@ -93,11 +98,44 @@ public class SoapServiceEndpoint {
 			return response;
 		}
 
-		List<String> methodList = new ArrayList<>();
-		methodList.addAll(METHODS_LIST);
+		List<String> methodList = new ArrayList<>(getSupportedMethodsList());
 		ArrayOfStringWrapper value = new ArrayOfStringWrapper(methodList);
 		response.setGetMethodsResult(value.getValue());
 		return response;
+	}
+
+	/**
+	 * Returns a {@link GetMethodsResponse} object for the GetMethods end point.
+	 * @param methods - {@link GetMethods} request object.
+	 * @param messageContext - {@link org.springframework.ws.context.MessageContext} for
+	 * the header response. 
+	 * @return {@link GetMethodsResponse} object for the GetMethods end point.
+	 */
+	@PayloadRoot(namespace = NAMESPACE_URI, localPart = "StakedWorkOrderNotification")
+	@ResponsePayload
+	public StakedWorkOrderNotificationResponse setStakedWorkOrderNotification(
+			@RequestPayload StakedWorkOrderNotification swan,  
+			org.springframework.ws.context.MessageContext messageContext) {
+		
+		StakedWorkOrderNotificationResponse response = new StakedWorkOrderNotificationResponse();
+		
+		try {
+			setHeader(messageContext);
+		}
+		catch (Exception e) {
+			log.error("Error creating SOAP response header!", e);
+			return response;
+		}
+		return response;
+
+	}
+
+	/**
+	 * Returns a list of all supported methods.
+	 * @return {@link List} of all supported methods.
+	 */
+	public static List<String> getSupportedMethodsList() {
+		return METHODS_LIST;
 	}
 
 	/**
