@@ -60,6 +60,7 @@ public class SoapServiceEndpoint {
 		List<String> tempMethodsList = new ArrayList<>();
 		tempMethodsList.add("PingURL");
 		tempMethodsList.add("GetMethods");
+		tempMethodsList.add("StakedWorkOrderNotification");
 		// TODO add additional supported methods.
 		METHODS_LIST = Collections.unmodifiableList(tempMethodsList);
 	}
