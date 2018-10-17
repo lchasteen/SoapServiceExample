@@ -18,7 +18,11 @@ import org.springframework.ws.server.endpoint.annotation.RequestPayload;
 import org.springframework.ws.server.endpoint.annotation.ResponsePayload;
 import org.springframework.ws.soap.saaj.SaajSoapMessage;
 
+import com.partnersoft.v5.soap.service.example.multispeak.model.ArrayOfStation;
 import com.partnersoft.v5.soap.service.example.multispeak.model.ArrayOfStringWrapper;
+import com.partnersoft.v5.soap.service.example.multispeak.model.ArrayOfWorkOrder;
+import com.partnersoft.v5.soap.service.example.multispeak.model.Assembly;
+import com.partnersoft.v5.soap.service.example.multispeak.model.AssemblyList;
 import com.partnersoft.v5.soap.service.example.multispeak.model.GetMethods;
 import com.partnersoft.v5.soap.service.example.multispeak.model.GetMethodsResponse;
 import com.partnersoft.v5.soap.service.example.multispeak.model.MultiSpeakMsgHeader;
@@ -27,6 +31,8 @@ import com.partnersoft.v5.soap.service.example.multispeak.model.PingURL;
 import com.partnersoft.v5.soap.service.example.multispeak.model.PingURLResponse;
 import com.partnersoft.v5.soap.service.example.multispeak.model.StakedWorkOrderNotification;
 import com.partnersoft.v5.soap.service.example.multispeak.model.StakedWorkOrderNotificationResponse;
+import com.partnersoft.v5.soap.service.example.multispeak.model.Station;
+import com.partnersoft.v5.soap.service.example.multispeak.model.WorkOrder;
 
 
 /**
@@ -114,13 +120,42 @@ public class SoapServiceEndpoint {
 	@PayloadRoot(namespace = NAMESPACE_URI, localPart = "StakedWorkOrderNotification")
 	@ResponsePayload
 	public StakedWorkOrderNotificationResponse setStakedWorkOrderNotification(
-			@RequestPayload StakedWorkOrderNotification swan,  
+			@RequestPayload StakedWorkOrderNotification swon,  
 			org.springframework.ws.context.MessageContext messageContext) {
 		
 		StakedWorkOrderNotificationResponse response = new StakedWorkOrderNotificationResponse();
 		
 		try {
 			setHeader(messageContext);
+			if (swon != null) {
+				ArrayOfWorkOrder awo = swon.getStakedWorkOrders();
+				if (awo != null) {
+					for (WorkOrder wo : awo.getWorkOrder()) {
+						log.info(wo.getAccountNumber());
+						log.info(wo.getActCode());
+						log.info(wo.getWoNumber());
+						log.info(wo.getCounty());
+						log.info(wo.getWoType());
+
+						ArrayOfStation aos = wo.getStationList();
+						if (aos == null) {
+							continue;
+						}
+						for (Station s : aos.getStation()) {
+							AssemblyList al = s.getAssemblyList();
+							if (al == null) {
+								continue;
+							}
+							for (Assembly as : al.getAssembly()) {
+								log.info(as.getFeatureType());
+								log.info(as.getUnitCode());
+								log.info(String.valueOf(as.getUnitLength()));
+							}
+						}
+
+					}
+				}
+			}
 		}
 		catch (Exception e) {
 			log.error("Error creating SOAP response header!", e);
